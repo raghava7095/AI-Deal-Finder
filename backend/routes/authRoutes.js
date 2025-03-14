@@ -1,3 +1,4 @@
+import { OAuth2Client } from "google-auth-library";
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -7,6 +8,7 @@ import dotenv from "dotenv";
 import authMiddleware from "../middleware/authMiddleware.js";
 dotenv.config();
 const router = express.Router();
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 router.get("/profile", authMiddleware, (req, res) => {
     res.json({ message: "Welcome to your profile", user: req.user });
 });
@@ -67,17 +69,63 @@ router.get(
 router.get(
     "/google/callback",
     passport.authenticate("google", { failureRedirect: "/" }),
-    (req, res, next) => {
-        req.logout((err) => {
-            if (err) return next(err);
-            res.redirect("http://localhost:3000"); // Change to frontend URL
-        });
+    async (req, res, next) => {
+        if (!req.user) return res.redirect("http://localhost:3000?error=authentication_failed");
+
+        const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+        res.redirect(`http://localhost:3000?token=${token}`);
     }
 );
 router.get("/logout", (req, res, next) => {
     req.logout((err) => {
-        if (err) return next(err);
+        if (err) {
+            return next(err);
+        }
+        req.session.destroy();
         res.json({ message: "Logged out successfully" });
     });
 });
+router.post("/google", async (req, res) => {
+    const { token } = req.body;  // Extract the token from the request body
+  
+    if (!token) {
+      return res.status(400).json({ success: false, message: "No token provided" });
+    }
+  
+    try {
+      // Verify the Google token
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,  // Your Google Client ID (ensure it's correct)
+      });
+  
+      // Get the payload (user data) from the verified token
+      const payload = ticket.getPayload();
+      console.log("Google Payload:", payload); // Log the payload for debugging purposes
+  
+      // Check if the user already exists in the database
+      let user = await User.findOne({ email: payload.email });
+      
+      if (!user) {
+        // If the user does not exist, create a new user
+        user = new User({
+          name: payload.name,
+          email: payload.email,
+          profilePic: payload.picture,
+        });
+        await user.save();  // Save the new user in the database
+      }
+  
+      // Generate a JWT token for your own authentication (for your app)
+      const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  
+      // Return the JWT token and user details
+      return res.json({ success: true, token: jwtToken, user });
+  
+    } catch (error) {
+      console.error("Google Auth Error:", error);  // Log the error for debugging
+      return res.status(400).json({ success: false, message: "Invalid Google token" });
+    }
+  });
 export default router;

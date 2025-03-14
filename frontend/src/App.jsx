@@ -12,7 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 const App = () => {
   return (
     <Router>
-      <GoogleOAuthProvider clientId="941277753022-ojc7qrqbasu2ueogf993dihcadm04elm.apps.googleusercontent.com">
+      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
         <MainContent />
       </GoogleOAuthProvider>
     </Router>
@@ -36,5 +36,4 @@ const MainContent = () => {
     </>
   );
 };
-
 export default App;
