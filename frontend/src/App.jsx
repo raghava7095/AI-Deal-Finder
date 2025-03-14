@@ -1,17 +1,20 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google"; // Import the GoogleOAuthProvider
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import EmailVerify from "./pages/EmailVerify";
 import ResetPassword from "./pages/ResetPassword";
 import Navbar from "./components/Navbar";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   return (
     <Router>
-      <MainContent />
+      <GoogleOAuthProvider clientId="941277753022-ojc7qrqbasu2ueogf993dihcadm04elm.apps.googleusercontent.com">
+        <MainContent />
+      </GoogleOAuthProvider>
     </Router>
   );
 };

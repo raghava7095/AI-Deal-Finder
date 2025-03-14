@@ -20,7 +20,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full flex justify-end items-center p-4 sm:p-6 absolute top-0 bg-white shadow-md">
+    <nav className="w-full fixed top-0 left-0 bg-white shadow-md z-50 flex justify-end items-center p-4 sm:p-6">
       {userData ? (
         <div className="relative group">
           <div className="w-10 h-10 flex justify-center items-center rounded-full bg-black text-white cursor-pointer text-lg">
