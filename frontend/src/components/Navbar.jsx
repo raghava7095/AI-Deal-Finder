@@ -1,53 +1,69 @@
 import React, { useEffect, useState } from "react";
-import { assets } from "../assets/assets";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa"; // Import user icon
 
 const Navbar = () => {
+  const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUserData(JSON.parse(storedUser));
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    setUserData(null);
-    navigate("/auth");
+    setUser(null); // Update state to reflect logout
+    navigate("/"); // Redirect to Home
   };
 
   return (
-    <nav className="w-full fixed top-0 left-0 bg-white shadow-md z-50 flex justify-end items-center p-4 sm:p-6">
-      {userData ? (
-        <div className="relative group">
-          <div className="w-10 h-10 flex justify-center items-center rounded-full bg-black text-white cursor-pointer text-lg">
-            {userData.name[0].toUpperCase()}
+    <nav className="bg-gray-900 text-white p-4 fixed top-0 left-0 w-full flex justify-between items-center shadow-md">
+      {/* Logo */}
+      <Link to="/" className="text-xl font-bold">
+        AI Deal Finder
+      </Link>
+
+      {/* Links */}
+      <div className="flex gap-4">
+        <Link to="/" className="hover:text-gray-300">Home</Link>
+        <Link to="/dashboard" className="hover:text-gray-300">Dashboard</Link>
+        <Link to="/about" className="hover:text-gray-300">About</Link>
+      </div>
+
+      {/* User Icon or Authentication Buttons */}
+      <div className="relative">
+        {user ? (
+          <div
+            className="cursor-pointer flex items-center gap-2"
+            onClick={() => setShowDropdown(!showDropdown)}
+          >
+            <FaUserCircle size={30} />
           </div>
-          <div className="absolute top-12 right-0 bg-gray-100 rounded-lg shadow-lg hidden group-hover:block z-10">
-            <ul className="p-2 w-40">
-              <li className="cursor-pointer px-4 py-2 text-gray-700 hover:bg-gray-300 rounded-md">
-                Profile
-              </li>
-              <li
-                className="cursor-pointer px-4 py-2 text-gray-700 hover:bg-gray-300 rounded-md"
-                onClick={handleLogout}
-              >
-                Log Out
-              </li>
-            </ul>
+        ) : (
+          <Link
+            to="/auth"
+            className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 transition"
+          >
+            Login
+          </Link>
+        )}
+
+        {/* Dropdown Menu */}
+        {showDropdown && user && (
+          <div className="absolute right-0 mt-2 w-32 bg-white text-gray-900 rounded shadow-lg">
+            <button
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+            >
+              Logout
+            </button>
           </div>
-        </div>
-      ) : (
-        <button
-          onClick={() => navigate("/auth")}
-          className="flex items-center gap-2 border border-gray-600 rounded-full px-6 py-2 text-gray-600 hover:bg-gray-200 transition duration-300"
-        >
-          Login <img src={assets.arrow_icon} alt="Arrow" className="w-5" />
-        </button>
-      )}
+        )}
+      </div>
     </nav>
   );
 };
