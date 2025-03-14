@@ -2,20 +2,14 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import passport from "passport";
-import User from "../models/userModel.js"; // Ensure this exists
+import User from "../models/userModel.js"; 
 import dotenv from "dotenv";
 import authMiddleware from "../middleware/authMiddleware.js";
-
 dotenv.config();
-
 const router = express.Router();
-
-// ✅ **Protected Route Example (Profile)**
 router.get("/profile", authMiddleware, (req, res) => {
     res.json({ message: "Welcome to your profile", user: req.user });
 });
-
-// ✅ **Signup Route**
 router.post("/signup", async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -39,8 +33,6 @@ router.post("/signup", async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
-
-// ✅ **Login Route**
 router.post("/login", async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -62,8 +54,6 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 });
-
-// ✅ **Google Auth Route (Forces Account Selection)**
 router.get(
     "/google",
     (req, res, next) => {
@@ -74,8 +64,6 @@ router.get(
     },
     passport.authenticate("google", { scope: ["profile", "email"], prompt: "select_account" })
 );
-
-// ✅ **Google Callback Route**
 router.get(
     "/google/callback",
     passport.authenticate("google", { failureRedirect: "/" }),
@@ -86,13 +74,10 @@ router.get(
         });
     }
 );
-
-// ✅ **Logout Route**
 router.get("/logout", (req, res, next) => {
     req.logout((err) => {
         if (err) return next(err);
         res.json({ message: "Logged out successfully" });
     });
 });
-
 export default router;

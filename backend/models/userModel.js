@@ -13,12 +13,11 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: function () {
-      return !this.googleId; // Password required only for email signups
+      return !this.googleId; 
     },
   },
   googleId: {
-    type: String, // This field is only used for Google OAuth
+    type: String,
   },
 });
-
 export default mongoose.model("User", userSchema);
