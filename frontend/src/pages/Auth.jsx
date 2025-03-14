@@ -1,61 +1,43 @@
+import { GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
-import { FaGoogle, FaFacebook } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  // Handle Form Submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Google login success handler
+  const handleGoogleLoginSuccess = (response) => {
+    toast.success("Google login successful! 🎉");
+    console.log(response); // Contains the user's Google profile info
+  };
 
-    if (isLogin) {
-      toast.success("Logged in successfully! 🚀");
-    } else {
-      toast.success("Account created successfully! 🎉");
-    }
+  // Google login failure handler
+  const handleGoogleLoginFailure = (error) => {
+    toast.error("Google login failed! Please try again.");
+    console.log(error);
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: "#ed0cf" }}>
       <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative animate-fadeIn">
         <ToastContainer position="top-right" autoClose={2000} />
-
-        {/* Title */}
+        
         <h2 className="text-2xl font-bold mb-4 text-center text-[#577D73]">
           {isLogin ? "Login" : "Sign Up"}
         </h2>
 
-        {/* Form */}
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          {!isLogin && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              className="p-2 border rounded text-[#577D73]"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          )}
+        <form className="flex flex-col gap-4">
           <input
             type="email"
             placeholder="Email"
             className="p-2 border rounded text-[#577D73]"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input
             type="password"
             placeholder="Password"
             className="p-2 border rounded text-[#577D73]"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             required
           />
           <button className="bg-[#577D73] text-white py-2 rounded hover:bg-[#344B45] transition">
@@ -63,16 +45,22 @@ const Auth = () => {
           </button>
         </form>
 
-        {/* Social Login Icons */}
-        <div className="flex justify-center gap-6 mt-4">
-          <FaGoogle className="text-[#DB4437] text-3xl cursor-pointer" onClick={() => toast.info("Google Login coming soon!")} />
-          <FaFacebook className="text-[#1877F2] text-3xl cursor-pointer" onClick={() => toast.info("Facebook Login coming soon!")} />
+        {/* Google Login Button */}
+        <div className="mt-4">
+          <GoogleLogin
+            onSuccess={handleGoogleLoginSuccess}
+            onError={handleGoogleLoginFailure}
+            useOneTap={true} // Optional: enables one-tap login
+            theme="outline" // Optional: use a button style
+          />
         </div>
 
-        {/* Toggle Login/Signup */}
         <p className="mt-4 text-center text-[#577D73]">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span className="text-[#344B45] cursor-pointer font-semibold" onClick={() => setIsLogin(!isLogin)}>
+          <span
+            className="text-[#344B45] cursor-pointer font-semibold"
+            onClick={() => setIsLogin(!isLogin)}
+          >
             {isLogin ? "Sign Up" : "Login"}
           </span>
         </p>
