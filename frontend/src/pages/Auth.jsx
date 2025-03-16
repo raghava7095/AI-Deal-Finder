@@ -1,91 +1,100 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
+
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
-
-const Auth = () => {
+const Auth = ({ setIsLoggedIn }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // ✅ Handle Google Login Success
   const handleGoogleLoginSuccess = (response) => {
-    toast.success("Google login successful! 🎉");
-
-    // Store user details in localStorage
-    const user = {
-      credential: response.credential, // JWT token (if needed)
-    };
-
-    localStorage.setItem("user", JSON.stringify(user));
-
-    // Redirect to the dashboard
-    navigate("/dashboard");
-  const handleGoogleLoginSuccess = async (response) => {
-    console.log("Google Login Response:", response);
-    
     if (!response.credential) {
       toast.error("Google login failed! No token received.");
       return;
     }
+    localStorage.setItem("token", response.credential);
+    setIsLoggedIn(true); // ✅ Ensure state updates
+    toast.success("Google login successful! 🎉");
 
-    try {
-      const token = response.credential; // Extract Google JWT token
-      console.log("Google Token:", token);
+    setTimeout(() => {
+      navigate("/dashboard"); // ✅ Ensure redirection after state update
+    }, 500);
+  };
 
-      // Sending the token to backend for validation
-      const res = await axios.post(`${API_BASE_URL}/auth/google`, { token });
+  // ✅ Handle Google Login Failure
+  const handleGoogleLoginFailure = () => {
+    toast.error("Google login failed! Please try again.");
+  };
 
-      if (res.data.success) {
-        toast.success("Google login successful! 🎉");
-        localStorage.setItem("token", res.data.token); // Save the token in localStorage
-        navigate("/Home"); // Redirect to home page after successful login
-      } else {
-        toast.error("Google login failed. Please try again.");
-      }
-    } catch (error) {
-      console.error("Google Login Error:", error);
-      toast.error("Google login failed! Please try again.");
+  // ✅ Handle Form Login
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (email === "test@example.com" && password === "password123") {
+      localStorage.setItem("token", "mock-auth-token");
+      setIsLoggedIn(true);
+      toast.success("Login successful! 🎉");
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 500);
+    } else {
+      toast.error("Invalid email or password!");
     }
   };
 
-  // Google login failure handler
-  const handleGoogleLoginFailure = (error) => {
-    toast.error("Google login failed! Please try again.");
-    console.error(error);
-  };
-
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative animate-fadeIn">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <ToastContainer position="top-right" autoClose={2000} />
 
         <h2 className="text-2xl font-bold mb-4 text-center text-[#577D73]">
           {isLogin ? "Login" : "Sign Up"}
         </h2>
 
-        <form className="flex flex-col gap-4">
-          <input type="email" placeholder="Email" className="p-2 border rounded text-[#577D73]" required />
-          <input type="password" placeholder="Password" className="p-2 border rounded text-[#577D73]" required />
-          <button className="bg-[#577D73] text-white py-2 rounded hover:bg-[#344B45] transition">
+        <form className="flex flex-col gap-4" onSubmit={handleFormSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="p-2 border rounded text-[#577D73]"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="p-2 border rounded text-[#577D73]"
+            required
+          />
+          <button
+            type="submit"
+            className="bg-[#577D73] text-white py-2 rounded hover:bg-[#344B45] transition"
+          >
             {isLogin ? "Login" : "Sign Up"}
           </button>
         </form>
 
-        <div className="mt-4">
+        <div className="mt-4 flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleLoginSuccess}
             onError={handleGoogleLoginFailure}
-            useOneTap={true}
             theme="outline"
           />
         </div>
 
         <p className="mt-4 text-center text-[#577D73]">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span className="text-[#344B45] cursor-pointer font-semibold" onClick={() => setIsLogin(!isLogin)}>
+          <span
+            className="text-[#344B45] cursor-pointer font-semibold"
+            onClick={() => setIsLogin(!isLogin)}
+          >
             {isLogin ? "Sign Up" : "Login"}
           </span>
         </p>

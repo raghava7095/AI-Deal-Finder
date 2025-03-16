@@ -11,8 +11,8 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
+    const storedToken = localStorage.getItem("token"); // Fix: Check for "token" instead of "user"
+    if (!storedToken) {
       navigate("/auth"); // Redirect to login if not authenticated
     }
   }, [navigate]);
@@ -39,8 +39,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="pt-32 px-6"> {/* Increased padding-top to 32 */}
-
+    <div className="pt-32 px-6">
       {/* Search Bar */}
       <div className="flex justify-center mb-6">
         <input

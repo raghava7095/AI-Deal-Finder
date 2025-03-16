@@ -1,21 +1,33 @@
-// src/App.jsx
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import { GoogleOAuthProvider } from "@react-oauth/google";  // Import GoogleOAuthProvider
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";  
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import EmailVerify from "./pages/EmailVerify";
-import ResetPassword from "./pages/ResetPassword";
-import Dashboard from "./pages/Dashboard"; // Import Dashboard component
+import Dashboard from "./pages/Dashboard"; 
 import Navbar from "./components/Navbar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Your Google OAuth Client ID
-const clientId = '941277753022-ojc7qrqbasu2ueogf993dihcadm04elm.apps.googleusercontent.com';
+const clientId = "941277753022-ojc7qrqbasu2ueogf993dihcadm04elm.apps.googleusercontent.com";
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setIsLoggedIn(!!localStorage.getItem("token"));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
@@ -23,32 +35,37 @@ const App = () => {
         <MainContent isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       </Router>
     </GoogleOAuthProvider>
-    <Router>
-      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-        <MainContent />
-      </GoogleOAuthProvider>
-    </Router>
   );
+};
+
+const PrivateRoute = ({ children, isLoggedIn }) => {
+  return isLoggedIn ? children : <Navigate to="/auth" replace />;
 };
 
 const MainContent = ({ isLoggedIn, setIsLoggedIn }) => {
   const location = useLocation();
-  const hideNavbarRoutes = ["/auth"]; // Add paths where Navbar should be hidden
+  const hideNavbarRoutes = ["/auth"];
 
   return (
     <>
       <ToastContainer />
       {!hideNavbarRoutes.includes(location.pathname) && (
-        <Navbar isLoggedIn={isLoggedIn} /> 
+        <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       )}
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/auth" element={<Auth setIsLoggedIn={setIsLoggedIn} />} /> {/* Pass setIsLoggedIn to Auth */}
-        <Route path="/email-verify" element={<EmailVerify />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} /> {/* Add this line */}
+        <Route path="/" element={<Home isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />} />
+        <Route path="/auth" element={<Auth setIsLoggedIn={setIsLoggedIn} />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute isLoggedIn={isLoggedIn}>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </>
   );
 };
+
 export default App;
