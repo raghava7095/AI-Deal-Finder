@@ -23,6 +23,11 @@ const App = () => {
         <MainContent isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       </Router>
     </GoogleOAuthProvider>
+    <Router>
+      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+        <MainContent />
+      </GoogleOAuthProvider>
+    </Router>
   );
 };
 
@@ -46,5 +51,4 @@ const MainContent = ({ isLoggedIn, setIsLoggedIn }) => {
     </>
   );
 };
-
 export default App;

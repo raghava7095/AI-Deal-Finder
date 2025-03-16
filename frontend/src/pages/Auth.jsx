@@ -2,13 +2,15 @@ import { GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
-  // Google login success handler
   const handleGoogleLoginSuccess = (response) => {
     toast.success("Google login successful! 🎉");
 
@@ -21,12 +23,38 @@ const Auth = () => {
 
     // Redirect to the dashboard
     navigate("/dashboard");
+  const handleGoogleLoginSuccess = async (response) => {
+    console.log("Google Login Response:", response);
+    
+    if (!response.credential) {
+      toast.error("Google login failed! No token received.");
+      return;
+    }
+
+    try {
+      const token = response.credential; // Extract Google JWT token
+      console.log("Google Token:", token);
+
+      // Sending the token to backend for validation
+      const res = await axios.post(`${API_BASE_URL}/auth/google`, { token });
+
+      if (res.data.success) {
+        toast.success("Google login successful! 🎉");
+        localStorage.setItem("token", res.data.token); // Save the token in localStorage
+        navigate("/Home"); // Redirect to home page after successful login
+      } else {
+        toast.error("Google login failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      toast.error("Google login failed! Please try again.");
+    }
   };
 
   // Google login failure handler
   const handleGoogleLoginFailure = (error) => {
     toast.error("Google login failed! Please try again.");
-    console.log(error);
+    console.error(error);
   };
 
   return (
