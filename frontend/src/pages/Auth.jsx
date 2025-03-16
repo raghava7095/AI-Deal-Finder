@@ -11,7 +11,18 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
-  // Google login success handler
+  const handleGoogleLoginSuccess = (response) => {
+    toast.success("Google login successful! 🎉");
+
+    // Store user details in localStorage
+    const user = {
+      credential: response.credential, // JWT token (if needed)
+    };
+
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // Redirect to the dashboard
+    navigate("/dashboard");
   const handleGoogleLoginSuccess = async (response) => {
     console.log("Google Login Response:", response);
     
@@ -47,7 +58,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: "#ed0cf" }}>
+    <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative animate-fadeIn">
         <ToastContainer position="top-right" autoClose={2000} />
 
@@ -63,22 +74,18 @@ const Auth = () => {
           </button>
         </form>
 
-        {/* Google Login Button */}
         <div className="mt-4">
           <GoogleLogin
             onSuccess={handleGoogleLoginSuccess}
             onError={handleGoogleLoginFailure}
-            useOneTap={true} // Optional: enables one-tap login
-            theme="outline" // Optional: use a button style
+            useOneTap={true}
+            theme="outline"
           />
         </div>
 
         <p className="mt-4 text-center text-[#577D73]">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span
-            className="text-[#344B45] cursor-pointer font-semibold"
-            onClick={() => setIsLogin(!isLogin)}
-          >
+          <span className="text-[#344B45] cursor-pointer font-semibold" onClick={() => setIsLogin(!isLogin)}>
             {isLogin ? "Sign Up" : "Login"}
           </span>
         </p>
